@@ -81,7 +81,3 @@ if __name__ == "__main__":
 
 	for tag in tags_list:
 		print(tag)
-
-	print("---- Filtering List ----")
-	for tag in CTag.filter_by_attr(tags_list, "language", "Sh"):
-		print(tag)
