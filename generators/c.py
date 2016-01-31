@@ -9,19 +9,19 @@ def generate_syntax(tags_list):
 	keyword_highlights = list()
 
 	current_rule = KeywordHighlight("cFunctionTag", "Function")
-	current_rule += CTag.filter_by_attr(c_tags, "tag_type", "f")
+	current_rule.add_tags(CTag.filter_by_attr(c_tags, "tag_type", "f"))
 	keyword_highlights.append(current_rule)
 
 	current_rule = KeywordHighlight("cMacroTag", "Macro")
-	current_rule += CTag.filter_by_attr(c_tags, "tag_type", "d")
+	current_rule.add_tags(CTag.filter_by_attr(c_tags, "tag_type", "d"))
 	keyword_highlights.append(current_rule)
 
 	current_rule = KeywordHighlight("cEnumTag", "Constant")
-	current_rule += CTag.filter_by_attr(c_tags, "tag_type", "e")
+	current_rule.add_tags(CTag.filter_by_attr(c_tags, "tag_type", "e"))
 	keyword_highlights.append(current_rule)
 
 	current_rule = KeywordHighlight("cTypeTag", "Type")
-	current_rule += CTag.filter_by_attr(c_tags, "tag_type", "t")
+	current_rule.add_tags(CTag.filter_by_attr(c_tags, "tag_type", "t"))
 	keyword_highlights.append(current_rule)
 
 	return keyword_highlights
