@@ -5,7 +5,8 @@ from ctag import CTag
 from syntax import KeywordHighlight
 
 def generate_syntax(tags_list):
-	c_tags = CTag.filter_by_attr(tags_list, "language", "C++")
+	c_tags = CTag.filter_by_attr(tags_list, "language", "C++") + \
+		 CTag.filter_by_attr(tags_list, "language", "C")
 	keyword_highlights = list()
 
 	current_rule = KeywordHighlight("cFunctionTag", "Function")
