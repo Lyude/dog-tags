@@ -25,10 +25,10 @@ def generate_syntax(tag_list):
 	                                       tag.language == "C"]
 
 	add_tags("cFunctionTag", "Function", tag_list, "f")
-	add_tags("cMacroTag", "Macro", tag_list, "d")
-	add_tags("cEnumTag", "Constant", tag_list, "e")
-	add_tags("cTypeTag", "Type", tag_list, "t")
-	add_tags("cStructTag", "Type", tag_list, "s")
+	add_tags("cMacroTag",    "Macro",    tag_list, "d")
+	add_tags("cEnumTag",     "Constant", tag_list, "e")
+	add_tags("cTypeTag",     "Type",     tag_list, "t")
+	add_tags("cStructTag",   "Type",     tag_list, "s")
 
 	return keyword_highlights
 
