@@ -8,9 +8,11 @@ keyword_highlights = list()
 
 def add_tags(name, highlight_group, c_tags, tag_type):
 	keyword_highlight = KeywordHighlight(name, highlight_group)
-	tags = CTag.filter_by_attr(c_tags, "tag_type", tag_type)
 
-	for tag in tags:
+	for tag in c_tags:
+		if tag.tag_type != tag_type:
+			continue
+
 		if tag.file_name.endswith(".h"):
 			keyword_highlight.add_tag(tag)
 		else:
@@ -19,8 +21,8 @@ def add_tags(name, highlight_group, c_tags, tag_type):
 	keyword_highlights.append(keyword_highlight)
 
 def generate_syntax(tags_list):
-	c_tags = CTag.filter_by_attr(tags_list, "language", "C++") + \
-		 CTag.filter_by_attr(tags_list, "language", "C")
+	c_tags = [tag for tag in tags_list if tag.language == "C++" or \
+	                                      tag.language == "C"]
 
 	add_tags("cFunctionTag", "Function", c_tags, "f")
 	add_tags("cMacroTag", "Macro", c_tags, "d")

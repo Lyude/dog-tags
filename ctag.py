@@ -67,10 +67,6 @@ class CTag():
 
 		return True
 
-	def filter_by_attr(list, attr, value):
-		return [tag for tag in list if hasattr(tag, attr) and \
-					       getattr(tag, attr) == value]
-
 if __name__ == "__main__":
 	tags_list = list()
 
