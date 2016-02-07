@@ -17,7 +17,7 @@ def parse_tag_file(path):
 
 if __name__ == "__main__":
 	if len(sys.argv) < 3:
-		sys.stderr.write("Usage: GenerateSyntax.py <filetype> <tag_file>\n")
+		sys.stderr.write("Usage: generate.py <filetype> <tag_file>\n")
 		exit(1)
 
 	filetype = sys.argv[1]
