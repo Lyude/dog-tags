@@ -2,7 +2,7 @@
 
 class KeywordHighlight():
 	def __init__(self, name, highlight_group):
-		self.global_tags = list()
+		self.global_tags = set()
 		self.local_tags = dict()
 
 		self.name = name
@@ -11,13 +11,13 @@ class KeywordHighlight():
 	def add_tag(self, tag, scope=None):
 		if scope != None:
 			if scope not in self.local_tags:
-				self.local_tags[scope] = list()
+				self.local_tags[scope] = set()
 
 			dest = self.local_tags[scope]
 		else:
 			dest = self.global_tags
 
-		dest.append(tag)
+		dest.add(tag.tag_name)
 
 	def __str__(self):
 		ret = ""
@@ -26,7 +26,7 @@ class KeywordHighlight():
 			ret += "syn keyword %s " % self.name
 
 			for tag in self.global_tags:
-				ret += tag.tag_name + " "
+				ret += tag + " "
 
 			ret += "\n"
 
@@ -35,7 +35,7 @@ class KeywordHighlight():
 			ret += "\tsyn keyword %s " % self.name
 
 			for tag in self.local_tags[scope]:
-				ret += tag.tag_name + " "
+				ret += tag + " "
 
 			ret += "\n"
 
