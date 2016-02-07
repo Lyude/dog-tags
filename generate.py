@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
 	sys.path.append("./generators")
 
-	generator = importlib.import_module("c")
+	generator = importlib.import_module(filetype)
 	syntax = generator.generate_syntax(tag_list)
 
 	for highlight in syntax:
