@@ -30,4 +30,4 @@ if __name__ == "__main__":
 	syntax = generator.generate_syntax(tag_list)
 
 	for highlight in syntax:
-		print(highlight)
+		highlight.generate_script()

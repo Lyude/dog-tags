@@ -19,32 +19,31 @@ class KeywordHighlight():
 
 		dest.add(tag.tag_name)
 
-	def __str__(self):
-		ret = ""
+	def generate_script(self):
+		def p(output):
+			print(output, end="")
 
 		if len(self.global_tags) != 0:
-			ret += "syn keyword %s " % self.name
+			p("syn keyword %s " % self.name)
 
 			for tag in self.global_tags:
-				ret += tag + " "
+				p(tag + " ")
 
-			ret += "\n"
+			p("\n")
 
 		for scope in self.local_tags.keys():
-			ret += "if expand('%%:t') == '%s'\n" % scope
-			ret += "\tsyn keyword %s " % self.name
+			p("if expand('%%:t') == '%s'\n" % scope)
+			p("\tsyn keyword %s " % self.name)
 
 			for tag in self.local_tags[scope]:
-				ret += tag + " "
+				p(tag + " ")
 
-			ret += "\n"
+			p("\n")
 
 			if len(self.global_tags) == 0:
-				ret += "\thi def link %s %s\n" % (self.name, self.highlight_group)
+				p("\thi def link %s %s\n" % (self.name, self.highlight_group))
 
-			ret += "endif\n"
+			p("endif\n")
 
 		if len(self.global_tags) != 0:
-			ret += "hi def link %s %s\n" % (self.name, self.highlight_group)
-
-		return ret
+			p("hi def link %s %s\n" % (self.name, self.highlight_group))
