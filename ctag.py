@@ -9,6 +9,8 @@ class CTag():
 			super().__init__(self, "Failed to parse tag")
 
 	def __init__(self, line):
+		line = line.strip()
+
 		fields = line.split("\t", 2);
 
 		if len(fields) < 3:
