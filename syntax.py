@@ -8,13 +8,7 @@ class KeywordHighlight():
 		self.name = name
 		self.highlight_group = highlight_group
 
-	def add_tags(self, tags, scope=None):
-		if hasattr(tags, "__iter__"):
-			for tag in tags:
-				self.add_tags(tag, scope)
-
-			return
-
+	def add_tag(self, tag, scope=None):
 		if scope != None:
 			if scope not in self.local_tags:
 				self.local_tags[scope] = list()
@@ -23,7 +17,7 @@ class KeywordHighlight():
 		else:
 			dest = self.global_tags
 
-		dest.append(tags)
+		dest.append(tag)
 
 	def __str__(self):
 		ret = ""

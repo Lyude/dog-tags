@@ -12,9 +12,9 @@ def add_tags(name, highlight_group, c_tags, tag_type):
 
 	for tag in tags:
 		if tag.file_name.endswith(".h"):
-			keyword_highlight.add_tags(tag)
+			keyword_highlight.add_tag(tag)
 		else:
-			keyword_highlight.add_tags(tag, tag.file_name)
+			keyword_highlight.add_tag(tag, tag.file_name)
 
 	keyword_highlights.append(keyword_highlight)
 
