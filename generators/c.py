@@ -31,7 +31,3 @@ def generate_syntax(tag_list):
 	add_tags("cStructTag",   "Type",     tag_list, "s")
 
 	return keyword_highlights
-
-if __name__ == "__main__":
-	for keyword_highlight in generate_syntax(argv[1]):
-		print(keyword_highlight)
