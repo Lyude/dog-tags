@@ -26,6 +26,7 @@ def generate_syntax(tags_list):
 	add_tags("cMacroTag", "Macro", c_tags, "d")
 	add_tags("cEnumTag", "Constant", c_tags, "e")
 	add_tags("cTypeTag", "Type", c_tags, "t")
+	add_tags("cStructTag", "Type", c_tags, "s")
 
 	return keyword_highlights
 
