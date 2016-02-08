@@ -38,7 +38,7 @@ class KeywordHighlight():
 			else:
 				first_conditional_printed = True
 
-			p("if expand('%%:t') == '%s'\n" % scope)
+			p("if expand('%%:p') == '%s'\n" % scope)
 			p("\tsyn keyword %s " % self.name)
 
 			for tag in self.local_tags[scope]:
