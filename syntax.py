@@ -31,7 +31,13 @@ class KeywordHighlight():
 
 			p("\n")
 
+		first_conditional_printed = False
 		for scope in self.local_tags.keys():
+			if first_conditional_printed:
+				p("else")
+			else:
+				first_conditional_printed = True
+
 			p("if expand('%%:t') == '%s'\n" % scope)
 			p("\tsyn keyword %s " % self.name)
 
@@ -43,6 +49,7 @@ class KeywordHighlight():
 			if len(self.global_tags) == 0:
 				p("\thi def link %s %s\n" % (self.name, self.highlight_group))
 
+		if first_conditional_printed:
 			p("endif\n")
 
 		if len(self.global_tags) != 0:
