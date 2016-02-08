@@ -29,5 +29,17 @@ if __name__ == "__main__":
 	generator = importlib.import_module(filetype)
 	syntax = generator.generate_syntax(tag_list)
 
+	# Clear the current syntax in vim in case the script's loaded multiple
+	# times to update highlighting rules
+	print("if exists(\"b:dog_tags_run\")")
+
+	for highlight in syntax:
+		print("\tsyn clear %s" % highlight.name)
+
+	print("endif")
+	print("")
+	print("let b:dog_tags_run=1")
+	print("")
+
 	for highlight in syntax:
 		highlight.generate_script()
