@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 
 class KeywordHighlight():
-	def __init__(self, name, highlight_group):
+	def __init__(self, name, highlight_group, preceding_keyword=None):
 		self.global_tags = set()
 		self.local_tags = dict()
 
 		self.name = name
 		self.highlight_group = highlight_group
+		self.preceding_keyword = preceding_keyword
 
 	def add_tag(self, tag, scope=None):
 		if scope != None:
@@ -20,8 +21,21 @@ class KeywordHighlight():
 		dest.add(tag.tag_name)
 
 	def generate_script(self):
+		def print_keyword_highlight(keywords):
+			print("syn keyword %s %s" % \
+			      (self.name, " ".join(keywords)), end="")
+
+			if self.preceding_keyword != None:
+				print(" containedin=%sPreceding" % self.name)
+			else:
+				print("")
+
+		if self.preceding_keyword != None:
+			print("syn match %sPreceding \"\(%s\s\)\@<=\S\+\" contains=%s transparent" % \
+			      (self.name, self.preceding_keyword, self.name))
+
 		if len(self.global_tags) != 0:
-			print("syn keyword %s %s" % (self.name, " ".join(self.global_tags)))
+			print_keyword_highlight(self.global_tags)
 
 		first_conditional_printed = False
 		for scope in self.local_tags.keys():
@@ -31,7 +45,8 @@ class KeywordHighlight():
 				first_conditional_printed = True
 
 			print("if expand('%%:p') == '%s'" % scope)
-			print("\tsyn keyword %s %s" % (self.name, " ".join(self.local_tags[scope])))
+			print("\t", end="")
+			print_keyword_highlight(self.local_tags[scope])
 
 			if len(self.global_tags) == 0:
 				print("\thi def link %s %s" % (self.name, self.highlight_group))

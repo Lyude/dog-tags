@@ -6,8 +6,8 @@ from copy import copy
 
 keyword_highlights = list()
 
-def add_tags(name, highlight_group, tag_list, tag_type):
-	keyword_highlight = KeywordHighlight(name, highlight_group)
+def add_tags(name, highlight_group, tag_list, tag_type, preceding_keyword=None):
+	keyword_highlight = KeywordHighlight(name, highlight_group, preceding_keyword)
 
 	for tag in tag_list:
 		if tag.tag_type != tag_type:
@@ -24,10 +24,11 @@ def generate_syntax(tag_list):
 	tag_list = [tag for tag in tag_list if tag.language == "C++" or \
 	                                       tag.language == "C"]
 
-	add_tags("cFunctionTag", "Function", tag_list, "f")
-	add_tags("cMacroTag",    "Macro",    tag_list, "d")
-	add_tags("cEnumTag",     "Constant", tag_list, "e")
-	add_tags("cTypeTag",     "Type",     tag_list, "t")
-	add_tags("cStructTag",   "Type",     tag_list, "s")
+	add_tags("cFunctionTag",   "Function", tag_list, "f")
+	add_tags("cMacroTag",      "Macro",    tag_list, "d")
+	add_tags("cEnumMemberTag", "Constant", tag_list, "e")
+	add_tags("cTypeTag",       "Type",     tag_list, "t")
+	add_tags("cStructTag",     "Type",     tag_list, "s", "struct")
+	add_tags("cEnumTag",       "Type",     tag_list, "g", "enum")
 
 	return keyword_highlights
