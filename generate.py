@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import sys
 import importlib
+from os import path
 from ctag import CTag
 from syntax import KeywordHighlight
 
@@ -24,7 +25,11 @@ if __name__ == "__main__":
 	tag_file = sys.argv[2]
 	tag_list = parse_tag_file(tag_file)
 
-	sys.path.append("./generators")
+	# TODO: Eventually I'll have some proper search logic to find generators
+	# in paths that they would be installed to along with this script. Since
+	# I don't have any way to install this script right now, we just search
+	# based off of the location of this script
+	sys.path.append(path.join(path.dirname(path.realpath(__file__)), "generators"))
 
 	generator = importlib.import_module(filetype)
 	syntax = generator.generate_syntax(tag_list)
