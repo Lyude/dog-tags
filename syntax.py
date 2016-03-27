@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import re
 
 class KeywordHighlight():
 	def __init__(self, name, highlight_group, preceding_keyword=None):
@@ -56,3 +57,38 @@ class KeywordHighlight():
 
 		if len(self.global_tags) != 0:
 			print("hi def link %s %s" % (self.name, self.highlight_group))
+
+# Extracts information from an already existing keyword file. Right now we just
+# support extracting keywords for generating a list of reserved keywords.
+class SyntaxFile():
+	keyword_rule_matcher = re.compile(r"^\s*syn(t(a(x)?)?)?\s+keyword\s+(?P<rule_name>\w+)\b(?P<rule_def>.*)")
+	keyword_matcher = re.compile(r"\w+")
+	keyword_arguments = set(["conceal", "cchar", "contained", "containedin",
+	                         "nextgroup", "transparent", "skipwhite",
+				 "skipnl", "skipempty", "conceallevel",
+				 "concealcursor"])
+
+	def is_keyword(word):
+		if SyntaxFile.keyword_matcher.match(word) != None and \
+		   word not in SyntaxFile.keyword_arguments:
+			return True
+		else:
+			return False
+
+	def __init__(self, path):
+		self.keywords = dict()
+
+		for line in open(path).readlines():
+			rule = self.keyword_rule_matcher.match(line)
+
+			if rule == None:
+				continue
+
+			rule_name = rule.group("rule_name")
+			keywords = rule.group("rule_def").strip().split(" ")
+
+			new_keywords = set([k for k in keywords if SyntaxFile.is_keyword(k)])
+			if rule_name not in self.keywords:
+				self.keywords[rule_name] = new_keywords
+			else:
+				self.keywords[rule_name] |= new_keywords
