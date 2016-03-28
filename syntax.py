@@ -45,7 +45,7 @@ class KeywordHighlight():
 			else:
 				first_conditional_printed = True
 
-			print("if expand('%%:p') == '%s'" % scope)
+			print("if @%% == '%s'" % scope)
 			print("\t", end="")
 			print_keyword_highlight(self.local_tags[scope])
 
