@@ -34,6 +34,8 @@ def generate_reserved_keywords():
 			builtin_file.keywords["cStorageClass"] | \
 			builtin_file.keywords["cConstant"]
 
+	return reserved_keywords
+
 def generate_syntax(tag_list):
 	tag_list = [tag for tag in tag_list if tag.language == "C++" or \
 	                                       tag.language == "C"]
