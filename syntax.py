@@ -45,7 +45,13 @@ class KeywordHighlight():
 			else:
 				first_conditional_printed = True
 
-			print("if @%% == '%s'" % scope)
+			# Compare against the full path if the tag paths are
+			# absolute
+			if scope.startswith("/"):
+				print("if expand('%%:p') == '%s'" % scope)
+			else:
+				print("if @%% == '%s'" % scope)
+
 			print("\t", end="")
 			print_keyword_highlight(self.local_tags[scope])
 
