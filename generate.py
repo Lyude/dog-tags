@@ -54,10 +54,10 @@ def parse_tag_file(args):
 			   progress.processed_count += 1
 			   tag_list.append(tag)
 
-			progress.update()
-
 		except CTag.NotTagException:
-			pass
+			progress.filtered_count += 1
+		finally:
+			progress.update()
 
 	progress.finish()
 
