@@ -2,66 +2,69 @@
 import sys
 import importlib
 import argparse
+from multiprocessing import Pool
 from fnmatch import fnmatch
 from os import path
-from sys import stderr
+from sys import stderr, exit
+from time import sleep
+from functools import partial
 from ctag import CTag
 from syntax import KeywordHighlight
 
-class ProgressIndicator():
-    def __init__(self, tag_count):
-        self.processed_count = 0
-        self.filtered_count = 0
-        self.tag_count = tag_count
-        self.progress_str = "0/%d tags (0%%)" % tag_count
+PROGRESS_INTERVAL = (1 / 60)
+CHUNKSIZE = 5000
 
-        stderr.write("Processed %s" % self.progress_str)
-        stderr.flush()
+def parse_tag(include, exclude, work):
+    try:
+        tag = CTag(work)
 
-    def update(self):
-        stderr.write('\b' * len(self.progress_str))
-        count = self.processed_count + self.filtered_count
+        if (include and not any(fnmatch(tag.file_name, g) for g in include)) or \
+           (exclude and any(fnmatch(tag.file_name, g) for g in exclude)):
+            return None
 
-        self.progress_str = "%d/%d tags (%d%%)" % ( \
-                count, self.tag_count, (count / self.tag_count) * 100)
-        stderr.write(self.progress_str)
-        stderr.flush()
+        return tag
+    except CTag.NotTagException:
+        pass
 
-    def finish(self):
-        stderr.write('\n')
-        stderr.write("%d included, %d excluded (filtered %d%%)\n" % ( \
-                self.processed_count, self.filtered_count,
-                (self.filtered_count / self.tag_count) * 100))
-        stderr.flush()
+def run_tag_parsers(args):
+    pool = Pool()
 
-def parse_tag_file(args):
-    tag_list = list()
     tag_lines = open(args.tag_file).readlines()
+    tag_count = len(tag_lines)
 
-    progress = ProgressIndicator(len(tag_lines))
+    progress_str = "0/%d tags (0%%)" % tag_count
+    stderr.write("Processed %s" % progress_str)
+    stderr.flush()
 
-    for line in tag_lines:
-        try:
-            tag = CTag(line)
+    # Keeping an up to date progress meter while keeping this multiprocess is a
+    # little difficult: if we give each worker the same Value(), they'll end up
+    # all just contending the mutex for it, so each one needs their own Value
+    # that
+    result = pool.map_async(partial(parse_tag, args.include, args.exclude),
+                            tag_lines, CHUNKSIZE)
+    del tag_lines
 
-            if args.include != None and \
-                    not any(fnmatch(tag.file_name, glob) for glob in args.include):
-               progress.filtered_count += 1
-            elif args.exclude != None and \
-                    any(fnmatch(tag.file_name, glob) for glob in args.exclude):
-               progress.filtered_count += 1
-            else:
-               progress.processed_count += 1
-               tag_list.append(tag)
+    finished = False
+    while not finished:
+        finished = result.ready()
+        processed = max(tag_count - (result._number_left * CHUNKSIZE), 0)
 
-        except CTag.NotTagException:
-            progress.filtered_count += 1
-        finally:
-            progress.update()
+        stderr.write("\b" * len(progress_str))
+        progress_str = "%d/%d tags (%d%%)" % (processed, tag_count,
+                                              (processed / tag_count) * 100)
+        stderr.write(progress_str)
+        if finished:
+            stderr.write("\n")
+        stderr.flush()
 
-    progress.finish()
+        if not finished:
+            result.wait(timeout=PROGRESS_INTERVAL)
 
-    return tag_list
+    if not result.successful:
+        stderr.write("Failed?\n")
+        exit(1)
+
+    return [r for r in result.get() if r != None]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
@@ -74,7 +77,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     stderr.write("Reading tag list...\n")
-    tag_list = parse_tag_file(args)
+    tag_list = run_tag_parsers(args)
 
     # TODO: Eventually I'll have some proper search logic to find generators
     # in paths that they would be installed to along with this script. Since
