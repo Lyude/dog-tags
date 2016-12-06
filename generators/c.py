@@ -21,7 +21,7 @@ def add_tags(tag_list, reserved_keywords, name, highlight_group, tag_type, prece
     keyword_highlights.append(keyword_highlight)
 
 def generate_reserved_keywords():
-    builtin_file = SyntaxFile("/usr/share/vim/vim74/syntax/c.vim")
+    builtin_file = SyntaxFile("c.vim")
 
     reserved_keywords = \
             builtin_file.keywords["cStatement"] | \

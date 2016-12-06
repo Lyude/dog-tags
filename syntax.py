@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 import re
+import os
+from glob import iglob
 
 class KeywordHighlight():
     def __init__(self, name, highlight_group, preceding_keyword=None):
@@ -73,6 +75,23 @@ class SyntaxFile():
                              "nextgroup", "transparent", "skipwhite",
                  "skipnl", "skipempty", "conceallevel",
                  "concealcursor"])
+    SEARCH_DIRS = [
+            "/usr/share/vim/vim*/syntax/",
+    ]
+
+    def _find_syntax_file(name):
+        found = None
+
+        for search_dir in SyntaxFile.SEARCH_DIRS:
+            for path in iglob(search_dir):
+                if name in os.listdir(path):
+                    found = path + name
+                    break
+
+        if found == None:
+            raise Exception("Syntax file %s not found in standard vim directories" % name)
+
+        return found
 
     def is_keyword(word):
         if SyntaxFile.keyword_matcher.match(word) != None and \
@@ -81,10 +100,10 @@ class SyntaxFile():
         else:
             return False
 
-    def __init__(self, path):
+    def __init__(self, name):
         self.keywords = dict()
 
-        for line in open(path).readlines():
+        for line in open(SyntaxFile._find_syntax_file(name)).readlines():
             rule = self.keyword_rule_matcher.match(line)
 
             if rule == None:
