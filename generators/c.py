@@ -5,9 +5,14 @@ from syntax import KeywordHighlight, SyntaxFile
 from copy import copy
 
 keyword_highlights = list()
+groups = dict()
 
 def add_tags(tag_list, reserved_keywords, name, highlight_group, tag_type, preceding_keyword=None):
-    keyword_highlight = KeywordHighlight(name, highlight_group, preceding_keyword)
+    if name in groups:
+        keyword_highlight = groups[name]
+    else:
+        keyword_highlight = KeywordHighlight(name, highlight_group, preceding_keyword)
+        groups[name] = keyword_highlight
 
     for tag in tag_list:
         if tag.tag_type != tag_type or tag.tag_name in reserved_keywords:
