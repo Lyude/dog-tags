@@ -42,6 +42,7 @@ def generate_syntax(tag_list):
     reserved_keywords = generate_reserved_keywords()
 
     add_tags(tag_list, reserved_keywords, "cFunctionTag",   "Function", "f")
+    add_tags(tag_list, reserved_keywords, "cFunctionTag",   "Function", "p")
     add_tags(tag_list, reserved_keywords, "cMacroTag",      "Macro",    "d")
     add_tags(tag_list, reserved_keywords, "cEnumMemberTag", "Constant", "e")
     add_tags(tag_list, reserved_keywords, "cTypeTag",       "Type",     "t")
