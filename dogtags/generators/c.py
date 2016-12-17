@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from sys import argv
-from ctag import CTag
-from syntax import KeywordHighlight, SyntaxFile
+from dogtags.ctag import CTag
+from dogtags.syntax import KeywordHighlight, SyntaxFile
 from copy import copy
 
 keyword_highlights = list()

@@ -8,8 +8,8 @@ from os import path
 from sys import stderr, exit
 from time import sleep
 from functools import partial
-from ctag import CTag
-from syntax import KeywordHighlight
+from dogtags.ctag import CTag
+from dogtags.syntax import KeywordHighlight
 
 PROGRESS_INTERVAL = (1 / 60)
 CHUNKSIZE = 5000
@@ -66,40 +66,33 @@ def run_tag_parsers(args):
 
     return [r for r in result.get() if r != None]
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
-    parser.add_argument('filetype', help="The filetype we're generating highlighting from")
-    parser.add_argument('tag_file', help="The ctags file to use for generation")
-    parser.add_argument('--exclude', '-e', help="Exclude tags from files matching this pattern",
-                        metavar='pattern', action='append', dest='exclude')
-    parser.add_argument('--include', '-i', help="Include only tags from files matching this pattern",
-                        metavar='pattern', action='append', dest='include')
-    args = parser.parse_args()
+parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
+parser.add_argument('filetype', help="The filetype we're generating highlighting from")
+parser.add_argument('tag_file', help="The ctags file to use for generation")
+parser.add_argument('--exclude', '-e', help="Exclude tags from files matching this pattern",
+                    metavar='pattern', action='append', dest='exclude')
+parser.add_argument('--include', '-i', help="Include only tags from files matching this pattern",
+                    metavar='pattern', action='append', dest='include')
+args = parser.parse_args()
 
-    stderr.write("Reading tag list...\n")
-    tag_list = run_tag_parsers(args)
+stderr.write("Reading tag list...\n")
+tag_list = run_tag_parsers(args)
 
-    # TODO: Eventually I'll have some proper search logic to find generators
-    # in paths that they would be installed to along with this script. Since
-    # I don't have any way to install this script right now, we just search
-    # based off of the location of this script
-    sys.path.append(path.join(path.dirname(path.realpath(__file__)), "generators"))
+generator = importlib.import_module("dogtags.generators." + args.filetype)
+stderr.write("Generating syntax highlighting...\n")
+syntax = generator.generate_syntax(tag_list)
 
-    generator = importlib.import_module(args.filetype)
-    stderr.write("Generating syntax highlighting...\n")
-    syntax = generator.generate_syntax(tag_list)
+# Clear the current syntax in vim in case the script's loaded multiple
+# times to update highlighting rules
+print("if exists(\"b:dog_tags_run\")")
 
-    # Clear the current syntax in vim in case the script's loaded multiple
-    # times to update highlighting rules
-    print("if exists(\"b:dog_tags_run\")")
+for highlight in syntax:
+    print("\tsyn clear %s" % highlight.name)
 
-    for highlight in syntax:
-        print("\tsyn clear %s" % highlight.name)
+print("endif")
+print("")
+print("let b:dog_tags_run=1")
+print("")
 
-    print("endif")
-    print("")
-    print("let b:dog_tags_run=1")
-    print("")
-
-    for highlight in syntax:
-        highlight.generate_script()
+for highlight in syntax:
+    highlight.generate_script()
