@@ -73,8 +73,8 @@ class SyntaxFile():
     keyword_matcher = re.compile(r"\w+")
     keyword_arguments = set(["conceal", "cchar", "contained", "containedin",
                              "nextgroup", "transparent", "skipwhite",
-                 "skipnl", "skipempty", "conceallevel",
-                 "concealcursor"])
+                             "skipnl", "skipempty", "conceallevel",
+                             "concealcursor"])
     SEARCH_DIRS = [
             "/usr/share/vim/vim*/syntax/",
     ]
