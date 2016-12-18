@@ -23,19 +23,18 @@ class KeywordHighlight():
 
         dest.add(tag.tag_name)
 
-    def generate_script(self):
+    def generate_script(self, out):
         def print_keyword_highlight(keywords):
-            print("syn keyword %s %s" % \
-                  (self.name, " ".join(keywords)), end="")
+            out.write("syn keyword %s %s" % (self.name, " ".join(keywords)))
 
             if self.preceding_keyword != None:
-                print(" containedin=%sPreceding" % self.name)
+                out.write(" containedin=%sPreceding\n" % self.name)
             else:
-                print("")
+                out.write("\n")
 
         if self.preceding_keyword != None:
-            print("syn match %sPreceding \"\(%s\s\)\@<=\S\+\" contains=%s transparent" % \
-                  (self.name, self.preceding_keyword, self.name))
+            out.write("syn match %sPreceding \"\(%s\s\)\@<=\S\+\" contains=%s transparent\n" % \
+                      (self.name, self.preceding_keyword, self.name))
 
         if len(self.global_tags) != 0:
             print_keyword_highlight(self.global_tags)
@@ -43,28 +42,28 @@ class KeywordHighlight():
         first_conditional_printed = False
         for scope in self.local_tags.keys():
             if first_conditional_printed:
-                print("else", end="")
+                out.write("else")
             else:
                 first_conditional_printed = True
 
             # Compare against the full path if the tag paths are
             # absolute
             if scope.startswith("/"):
-                print("if expand('%%:p') == '%s'" % scope)
+                out.write("if expand('%%:p') == '%s'\n" % scope)
             else:
-                print("if @%% == '%s'" % scope)
+                out.write("if @%% == '%s'\n" % scope)
 
-            print("\t", end="")
+            out.write("\t")
             print_keyword_highlight(self.local_tags[scope])
 
             if len(self.global_tags) == 0:
-                print("\thi def link %s %s" % (self.name, self.highlight_group))
+                out.write("\thi def link %s %s\n" % (self.name, self.highlight_group))
 
         if first_conditional_printed:
-            print("endif")
+            out.write("endif\n")
 
         if len(self.global_tags) != 0:
-            print("hi def link %s %s" % (self.name, self.highlight_group))
+            out.write("hi def link %s %s\n" % (self.name, self.highlight_group))
 
 # Extracts information from an already existing keyword file. Right now we just
 # support extracting keywords for generating a list of reserved keywords.

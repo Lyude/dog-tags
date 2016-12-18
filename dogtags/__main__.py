@@ -73,7 +73,12 @@ parser.add_argument('-e', '--exclude', help="Exclude tags from files matching th
                     metavar='pattern', action='append', dest='exclude')
 parser.add_argument('-i', '--include', help="Include only tags from files matching this pattern",
                     metavar='pattern', action='append', dest='include')
+parser.add_argument('-o', '--output',
+                    help="Where to output the generated syntax file (default is /dev/stdout)",
+                    default='/dev/stdout')
 args = parser.parse_args()
+
+out = open(args.output, "w")
 
 stderr.write("Reading tag list...\n")
 tag_list = run_tag_parsers(args)
@@ -84,15 +89,15 @@ syntax = generator.generate_syntax(tag_list)
 
 # Clear the current syntax in vim in case the script's loaded multiple
 # times to update highlighting rules
-print("if exists(\"b:dog_tags_run\")")
+out.write("if exists(\"b:dog_tags_run\")\n")
 
 for highlight in syntax:
-    print("\tsyn clear %s" % highlight.name)
+    out.write("\tsyn clear %s\n" % highlight.name)
 
-print("endif")
-print("")
-print("let b:dog_tags_run=1")
-print("")
+out.write("endif\n")
+out.write("\n")
+out.write("let b:dog_tags_run=1\n")
+out.write("\n")
 
 for highlight in syntax:
-    highlight.generate_script()
+    highlight.generate_script(out)
