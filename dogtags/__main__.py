@@ -69,9 +69,9 @@ def run_tag_parsers(args):
 parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
 parser.add_argument('filetype', help="The filetype we're generating highlighting from")
 parser.add_argument('tag_file', help="The ctags file to use for generation")
-parser.add_argument('--exclude', '-e', help="Exclude tags from files matching this pattern",
+parser.add_argument('-e', '--exclude', help="Exclude tags from files matching this pattern",
                     metavar='pattern', action='append', dest='exclude')
-parser.add_argument('--include', '-i', help="Include only tags from files matching this pattern",
+parser.add_argument('-i', '--include', help="Include only tags from files matching this pattern",
                     metavar='pattern', action='append', dest='include')
 args = parser.parse_args()
 
