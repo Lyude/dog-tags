@@ -8,7 +8,7 @@ setup(
     packages=['dogtags'],
     entry_points={
         'console_scripts': [
-            'dogtags = dogtags'
+            'dogtags = dogtags.__main__'
         ]
     },
     author="Lyude Paul",
