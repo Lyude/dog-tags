@@ -54,6 +54,7 @@ def run_tag_parsers(tag_file, include, exclude):
     result = pool.map_async(partial(parse_tag, include, exclude),
                             tag_lines, chunksize=int(tag_count / cpu_count()))
     del tag_lines
+    pool.close()
 
     finished = False
     while not finished:
