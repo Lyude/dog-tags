@@ -6,7 +6,6 @@ from time import sleep
 from ctypes import c_int
 from functools import partial
 from dogtags.ctag import CTag
-from dogtags.syntax import KeywordHighlight
 
 PROGRESS_INTERVAL = (1 / 30)
 
