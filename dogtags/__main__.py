@@ -19,7 +19,7 @@ args = parser.parse_args()
 out = open(args.output, "w")
 
 stderr.write("Reading tag list...\n")
-tag_list = run_tag_parsers(args)
+tag_list = run_tag_parsers(args.tag_file, args.include, args.exclude)
 
 generator = importlib.import_module("dogtags.generators." + args.filetype)
 stderr.write("Generating syntax highlighting...\n")

@@ -39,19 +39,19 @@ def parser_init(pos):
 
     counts = counts
 
-def run_tag_parsers(args):
+def run_tag_parsers(tag_file, include, exclude):
     global counts
     pool = Pool(initializer=parser_init,
                 initargs=[Value(c_int, 0, lock=RLock())])
 
-    tag_lines = open(args.tag_file).readlines()
+    tag_lines = open(tag_file).readlines()
     tag_count = len(tag_lines)
 
     progress_str = "0/%d tags (0%%)" % tag_count
     stderr.write("Processed %s" % progress_str)
     stderr.flush()
 
-    result = pool.map_async(partial(parse_tag, args.include, args.exclude),
+    result = pool.map_async(partial(parse_tag, include, exclude),
                             tag_lines, chunksize=int(tag_count / cpu_count()))
     del tag_lines
 
