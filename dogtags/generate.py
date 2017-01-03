@@ -43,7 +43,7 @@ def run_tag_parsers(tag_file, include, exclude):
     pool = Pool(initializer=parser_init,
                 initargs=[Value(c_int, 0, lock=RLock())])
 
-    tag_lines = open(tag_file).readlines()
+    tag_lines = tag_file.readlines()
     tag_count = len(tag_lines)
 
     progress_str = "0/%d tags (0%%)" % tag_count
