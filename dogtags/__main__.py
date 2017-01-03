@@ -2,6 +2,7 @@
 import importlib
 import argparse
 from dogtags.generate import run_tag_parsers
+from dogtags.syntax import ConditionalBlock
 from sys import stderr
 
 parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
@@ -26,15 +27,11 @@ syntax = generator.generate_syntax(tag_list)
 
 # Clear the current syntax in vim in case the script's loaded multiple
 # times to update highlighting rules
-args.output.write("if exists(\"b:dog_tags_run\")\n")
+with ConditionalBlock(args.output, 'exists("b:dog_tags_run")'):
+    for highlight in syntax:
+        args.output.write("\tsyn clear %s\n" % highlight.name)
 
-for highlight in syntax:
-    args.output.write("\tsyn clear %s\n" % highlight.name)
-
-args.output.write("endif\n")
-args.output.write("\n")
-args.output.write("let b:dog_tags_run=1\n")
-args.output.write("\n")
+args.output.write("\nlet b:dog_tags_run=1\n\n")
 
 for highlight in syntax:
     highlight.generate_script(args.output)
