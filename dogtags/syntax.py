@@ -3,6 +3,65 @@ import re
 import os
 from glob import iglob
 
+class ConditionalBlock():
+    """
+    Generates simple conditional blocks to wrap around generated vimscript
+    """
+    def __init__(self, out, start_condition=None):
+        self._out = out
+        self._first_conditional = True
+        if start_condition != None:
+            self._start_condition = start_condition
+
+    class UsageError(Exception):
+        pass
+
+    def __enter__(self):
+        if hasattr(self, '_start_condition'):
+            self.start_block(self._start_condition)
+            del self._start_condition
+
+        return self
+
+    def __exit__(self, *exc):
+        self.end_block()
+        return False
+
+    def start_block(self, condition=None):
+        if self._first_conditional:
+            if condition == None:
+                raise ConditionalBlock.UsageError("First conditional cannot be empty")
+
+            self._first_conditional = False
+            self._out.write("if %s\n" % condition)
+            return
+
+        if condition != None:
+            self._out.write("elseif %s\n" % condition)
+        else:
+            self._out.write('else\n')
+
+    def end_block(self):
+        # Don't end a conditional we never started
+        if self._first_conditional:
+            return
+        self._out.write('endif\n')
+
+class TagScopeBlock(ConditionalBlock):
+    """
+    Generates simple conditional blocks that limit the scope of the contained
+    vimscript to a certain file
+    """
+    def start_block(self, scope=None):
+        if scope != None:
+            # Compare against the full path if the tag paths are absolute
+            condition = "%s == '%s'" % (
+                "expand('%:p')" if scope.startswith('/') else '@%', scope)
+        else:
+            condition = None
+
+        super().start_block(condition)
+
 class KeywordHighlight():
     def __init__(self, name, highlight_group, preceding_keyword=None):
         self.global_tags = set()
@@ -24,43 +83,19 @@ class KeywordHighlight():
         dest.add(tag.tag_name)
 
     def generate_script(self, out):
-        def print_keyword_highlight(keywords):
-            out.write("syn keyword %s %s" % (self.name, " ".join(keywords)))
-
-            if self.preceding_keyword != None:
-                out.write(" containedin=%sPreceding\n" % self.name)
-            else:
-                out.write("\n")
-
-        if self.preceding_keyword != None:
-            out.write("syn match %sPreceding \"\(%s\s\)\@<=\S\+\" contains=%s transparent\n" % \
-                      (self.name, self.preceding_keyword, self.name))
-
         if len(self.global_tags) != 0:
-            print_keyword_highlight(self.global_tags)
+            out.write("syn keyword %s %s\n" % (self.name,
+                                               " ".join(self.global_tags)))
 
-        first_conditional_printed = False
-        for scope in self.local_tags.keys():
-            if first_conditional_printed:
-                out.write("else")
-            else:
-                first_conditional_printed = True
+        with TagScopeBlock(out) as block:
+            for scope in self.local_tags.keys():
+                block.start_block(scope)
+                out.write("\tsyn keyword %s %s\n" % (
+                    self.name, " ".join(self.local_tags[scope])))
 
-            # Compare against the full path if the tag paths are
-            # absolute
-            if scope.startswith("/"):
-                out.write("if expand('%%:p') == '%s'\n" % scope)
-            else:
-                out.write("if @%% == '%s'\n" % scope)
-
-            out.write("\t")
-            print_keyword_highlight(self.local_tags[scope])
-
-            if len(self.global_tags) == 0:
-                out.write("\thi def link %s %s\n" % (self.name, self.highlight_group))
-
-        if first_conditional_printed:
-            out.write("endif\n")
+                if len(self.global_tags) == 0:
+                    out.write("\thi def link %s %s\n" % (self.name,
+                                                         self.highlight_group))
 
         if len(self.global_tags) != 0:
             out.write("hi def link %s %s\n" % (self.name, self.highlight_group))
