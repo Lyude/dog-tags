@@ -3,7 +3,7 @@ import importlib
 import argparse
 from dogtags.generate import run_tag_parsers
 from dogtags.syntax import ConditionalBlock
-from sys import stderr
+from sys import stderr, exit
 
 parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
 parser.add_argument('filetype', help="The filetype we're generating highlighting from")
@@ -35,3 +35,5 @@ args.output.write("\nlet b:dog_tags_run=1\n\n")
 
 for highlight in syntax:
     highlight.generate_script(args.output)
+
+exit(0)
