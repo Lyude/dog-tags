@@ -11,33 +11,27 @@ class CTag():
     def __init__(self, line):
         line = line.strip()
 
-        fields = line.split("\t", 2);
+        try:
+            fields = line.split("\t", 2);
 
-        if len(fields) < 3:
-            raise CTag.NotTagException()
+            self.tag_name = fields[0]
+            self.file_name = fields[1]
 
-        self.tag_name = fields[0]
-        self.file_name = fields[1]
+            fields = fields[2].split(";\"\t")
+            self.ex_cmd = fields[0]
 
-        fields = fields[2].split(";\"\t")
-        if len(fields) < 2:
-            raise CTag.NotTagException()
+            fields = fields[1].split("\t")
+            self.tag_type = fields[0]
 
-        self.ex_cmd = fields[0]
+            if len(fields) > 1:
+                self.extra_field_names = list()
 
-        fields = fields[1].split("\t")
-        if len(fields) < 1:
-            raise CTag.NotTagException()
-
-        self.tag_type = fields[0]
-
-        if len(fields) > 1:
-            self.extra_field_names = list()
-
-            for field in fields[1:]:
-                pair = field.split(":", 1)
-                setattr(self, pair[0], pair[1])
-                self.extra_field_names.append(pair[0])
+                for field in fields[1:]:
+                    pair = field.split(":", 1)
+                    setattr(self, pair[0], pair[1])
+                    self.extra_field_names.append(pair[0])
+        except Exception as e:
+            raise CTag.NotTagException() from e
 
     def __str__(self):
         self_str = "Tag name: %s\n" \
