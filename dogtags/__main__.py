@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import importlib
 import argparse
-from dogtags.generate import run_tag_parsers
+from dogtags.generate import run_tag_parsers, FileOutput
 from dogtags.syntax import ConditionalBlock
 from sys import stderr, exit
 
@@ -15,7 +15,8 @@ parser.add_argument('-i', '--include', help="Include only tags from files matchi
                     metavar='pattern', action='append', dest='include')
 parser.add_argument('-o', '--output',
                     help="Where to output the generated syntax file (default is /dev/stdout)",
-                    type=argparse.FileType('w+'), default='-')
+                    type=lambda output: FileOutput(open(output, 'w+')),
+                    default='-')
 args = parser.parse_args()
 
 stderr.write("Reading tag list...\n")
@@ -29,9 +30,9 @@ syntax = generator.generate_syntax(tag_list)
 # times to update highlighting rules
 with ConditionalBlock(args.output, 'exists("b:dog_tags_run")'):
     for highlight in syntax:
-        args.output.write("\tsyn clear %s\n" % highlight.name)
+        args.output("syn clear %s" % highlight.name)
 
-args.output.write("\nlet b:dog_tags_run=1\n\n")
+args.output("let b:dog_tags_run=1")
 
 for highlight in syntax:
     highlight.generate_script(args.output)

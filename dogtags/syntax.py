@@ -2,6 +2,7 @@
 import re
 import os
 from glob import iglob
+from dogtags.generate import StringOutput
 
 class ConditionalBlock():
     """
@@ -33,19 +34,22 @@ class ConditionalBlock():
                 raise ConditionalBlock.UsageError("First conditional cannot be empty")
 
             self._first_conditional = False
-            self._out.write("if %s\n" % condition)
-            return
-
-        if condition != None:
-            self._out.write("elseif %s\n" % condition)
+            self._out('if %s' % condition)
         else:
-            self._out.write('else\n')
+            self._out('else', endline=False)
+            if condition != None:
+                self._out(' if %s' % condition, endline=False)
+            self._out('')
+
+        self._out.indent_level += 1
 
     def end_block(self):
         # Don't end a conditional we never started
         if self._first_conditional:
             return
-        self._out.write('endif\n')
+
+        self._out('endif')
+        self._out.indent_level -= 1
 
 class TagScopeBlock(ConditionalBlock):
     """
@@ -82,23 +86,26 @@ class KeywordHighlight():
 
         dest.add(tag.tag_name)
 
-    def generate_script(self, out):
+    def generate_script(self, out=StringOutput()):
         if len(self.global_tags) != 0:
-            out.write("syn keyword %s %s\n" % (self.name,
-                                               " ".join(self.global_tags)))
+            out("syn keyword %s %s" % (self.name, " ".join(self.global_tags)))
 
         with TagScopeBlock(out) as block:
             for scope in self.local_tags.keys():
                 block.start_block(scope)
-                out.write("\tsyn keyword %s %s\n" % (
-                    self.name, " ".join(self.local_tags[scope])))
+                out("syn keyword %s %s" % (self.name,
+                                           " ".join(self.local_tags[scope])))
 
                 if len(self.global_tags) == 0:
-                    out.write("\thi def link %s %s\n" % (self.name,
-                                                         self.highlight_group))
+                    out("hi def link %s %s" % (self.name, self.highlight_group))
 
         if len(self.global_tags) != 0:
-            out.write("hi def link %s %s\n" % (self.name, self.highlight_group))
+            out("hi def link %s %s" % (self.name, self.highlight_group))
+
+        try:
+            return out.str
+        except AttributeError:
+            pass
 
 # Extracts information from an already existing keyword file. Right now we just
 # support extracting keywords for generating a list of reserved keywords.
