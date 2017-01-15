@@ -40,7 +40,7 @@ class ConditionalBlock():
 
             self._out('else', endline=False)
             if condition != None:
-                self._out(' if %s' % condition, endline=False)
+                self._out('if %s' % condition, endline=False)
             self._out('')
 
         self._out.indent_level += 1
