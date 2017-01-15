@@ -3,7 +3,7 @@ import importlib
 import argparse
 from dogtags.generate import run_tag_parsers, FileOutput
 from dogtags.syntax import ConditionalBlock
-from sys import stderr, exit
+from sys import stderr, stdout, exit
 
 parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
 parser.add_argument('filetype', help="The filetype we're generating highlighting from")
@@ -15,8 +15,8 @@ parser.add_argument('-i', '--include', help="Include only tags from files matchi
                     metavar='pattern', action='append', dest='include')
 parser.add_argument('-o', '--output',
                     help="Where to output the generated syntax file (default is /dev/stdout)",
-                    type=lambda output: FileOutput(open(output, 'w+')),
-                    default='-')
+                    type=lambda output: FileOutput(open(output, 'w')),
+                    default=FileOutput(stdout))
 args = parser.parse_args()
 
 stderr.write("Reading tag list...\n")
