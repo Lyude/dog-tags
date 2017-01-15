@@ -36,6 +36,8 @@ class ConditionalBlock():
             self._first_conditional = False
             self._out('if %s' % condition)
         else:
+            self._out.indent_level -= 1
+
             self._out('else', endline=False)
             if condition != None:
                 self._out(' if %s' % condition, endline=False)
