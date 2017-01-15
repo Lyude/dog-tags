@@ -50,8 +50,8 @@ class ConditionalBlock():
         if self._first_conditional:
             return
 
-        self._out('endif')
         self._out.indent_level -= 1
+        self._out('endif')
 
 class TagScopeBlock(ConditionalBlock):
     """
