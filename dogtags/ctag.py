@@ -2,7 +2,13 @@
 from sys import argv
 
 class CTag():
-    extra_field_names = None
+    __slots__ = [
+        'tag_name',
+        'file_name',
+        'ex_cmd',
+        'tag_type',
+        'extra_fields'
+    ]
 
     class NotTagException(Exception):
         def __init__(self):
@@ -23,15 +29,20 @@ class CTag():
             fields = fields[1].split("\t")
             self.tag_type = fields[0]
 
-            if len(fields) > 1:
-                self.extra_field_names = list()
+            if fields:
+                self.extra_fields = dict()
 
                 for field in fields[1:]:
-                    pair = field.split(":", 1)
-                    setattr(self, pair[0], pair[1])
-                    self.extra_field_names.append(pair[0])
+                    field_name, field_value = field.split(":", 1)
+                    self.extra_fields[field_name] = field_value
         except Exception as e:
             raise CTag.NotTagException() from e
+
+    def __getattr__(self, attr):
+        try:
+            return self.__getattribute__('extra_fields')[attr]
+        except (KeyError, AttributeError):
+            raise AttributeError("'CTag' object has no attribute '%s'" % attr)
 
     def __str__(self):
         self_str = "Tag name: %s\n" \
@@ -40,24 +51,20 @@ class CTag():
                "Type: %s\n" \
                % (self.tag_name, self.file_name, self.ex_cmd, self.tag_type)
 
-        if self.extra_field_names != None:
-            for field_name in self.extra_field_names:
-                self_str += "%s: %s\n" % (field_name, getattr(self, field_name))
+        if self.extra_fields:
+            for field_name in self.extra_fields:
+                self_str += "%s: %s\n" % (field_name,
+                                          self.extra_fields[field_name])
 
         return self_str;
 
     def __cmp__(self, other):
-        if self.tag_name != other.tag_name or \
-           self.file_name != other.file_name or \
-           self.ex_cmd != other.ex_cmd or \
-           self.tag_type != other.tag_type or \
-           self.extra_field_names != other.extra_field_names:
-               return False
-
-        if self.extra_field_names != None:
-            for field in self.extra_field_names:
+        try:
+            for field in CTag.__slots__ + self.extra_fields.keys():
                 if getattr(self, field) != getattr(other, field):
                     return False
+        except AttributeError: # The other instance doesn't have all our fields
+            return False
 
         return True
 
