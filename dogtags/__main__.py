@@ -3,12 +3,14 @@ import importlib
 import argparse
 from dogtags.generate import run_tag_parsers, FileOutput
 from dogtags.syntax import ConditionalBlock
+from dogtags.version import __version__
 from sys import stderr, stdout, exit
 
 parser = argparse.ArgumentParser(description="Generate vim syntax files using ctags")
 parser.add_argument('filetype', help="The filetype we're generating highlighting from")
 parser.add_argument('tag_file', help="The ctags file to use for generation",
                     type=argparse.FileType('r'))
+parser.add_argument('-V', '--version', action='version', version=__version__)
 parser.add_argument('-e', '--exclude', help="Exclude tags from files matching this pattern",
                     metavar='pattern', action='append', dest='exclude')
 parser.add_argument('-i', '--include', help="Include only tags from files matching this pattern",
