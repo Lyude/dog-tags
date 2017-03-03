@@ -30,11 +30,9 @@ syntax = generator.generate_syntax(tag_list)
 
 # Clear the current syntax in vim in case the script's loaded multiple
 # times to update highlighting rules
-with ConditionalBlock(args.output, 'exists("b:dog_tags_run")'):
-    for highlight in syntax:
-        args.output("syn clear %s" % highlight.name)
-
-args.output("let b:dog_tags_run=1")
+for name in set([h.name for h in syntax]):
+    with ConditionalBlock(args.output, 'hlexists("%s")' % name):
+        args.output("syn clear %s" % name)
 
 for highlight in syntax:
     highlight.generate_script(args.output)
