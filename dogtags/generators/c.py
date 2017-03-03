@@ -7,6 +7,8 @@ from copy import copy
 keyword_highlights = list()
 groups = dict()
 
+filetypes = ('c', 'cpp')
+
 def add_tags(tag_list, reserved_keywords, name, highlight_group, tag_type, preceding_keyword=None):
     if name in groups:
         keyword_highlight = groups[name]
