@@ -93,13 +93,14 @@ class KeywordHighlight():
 
     def generate_script(self, out=StringOutput()):
         if len(self.global_tags) != 0:
-            out("syn keyword %s %s" % (self.name, " ".join(self.global_tags)))
+            for tag in self.global_tags:
+                out("syn keyword %s %s" % (self.name, tag))
 
         with TagScopeBlock(out) as block:
             for scope in self.local_tags.keys():
                 block.start_block(scope)
-                out("syn keyword %s %s" % (self.name,
-                                           " ".join(self.local_tags[scope])))
+                for tag in self.local_tags[scope]:
+                    out("syn keyword %s %s" % (self.name, tag))
 
                 if len(self.global_tags) == 0:
                     out("hi def link %s %s" % (self.name, self.highlight_group))
