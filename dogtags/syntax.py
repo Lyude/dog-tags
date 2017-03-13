@@ -108,9 +108,11 @@ class KeywordHighlight():
         if len(self.global_tags) != 0:
             out("hi def link %s %s" % (self.name, self.highlight_group))
 
-# Extracts information from an already existing keyword file. Right now we just
-# support extracting keywords for generating a list of reserved keywords.
 class SyntaxFile():
+    """
+    Extracts information from an already existing keyword file. Right now we
+    just support extracting keywords for generating a list of reserved keywords.
+    """
     keyword_rule_matcher = re.compile(r"^\s*syn(t(a(x)?)?)?\s+keyword\s+(?P<rule_name>\w+)\b(?P<rule_def>.*)")
     keyword_matcher = re.compile(r"\w+")
     keyword_arguments = set(["conceal", "cchar", "contained", "containedin",
