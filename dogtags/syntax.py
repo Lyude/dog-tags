@@ -91,7 +91,7 @@ class KeywordHighlight():
 
         dest.add(tag.tag_name)
 
-    def generate_script(self, out=StringOutput()):
+    def generate_script(self, out):
         if len(self.global_tags) != 0:
             for tag in self.global_tags:
                 out("syn keyword %s %s" % (self.name, tag))
@@ -107,11 +107,6 @@ class KeywordHighlight():
 
         if len(self.global_tags) != 0:
             out("hi def link %s %s" % (self.name, self.highlight_group))
-
-        try:
-            return out.str
-        except AttributeError:
-            pass
 
 # Extracts information from an already existing keyword file. Right now we just
 # support extracting keywords for generating a list of reserved keywords.
