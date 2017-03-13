@@ -58,7 +58,7 @@ class TagScopeBlock(ConditionalBlock):
     Generates simple conditional blocks that limit the scope of the contained
     vimscript to a certain file
     """
-    def __init__(self, out=StringOutput()):
+    def __init__(self, out):
         super().__init__(out=out)
 
     def start_block(self, scope=None):
