@@ -8,6 +8,7 @@ keyword_highlights = list()
 groups = dict()
 
 filetypes = ('c', 'cpp')
+languages = {'C', 'C++'}
 
 def add_tags(tag_list, reserved_keywords, name, highlight_group, tag_type, preceding_keyword=None):
     if name in groups:
@@ -44,8 +45,6 @@ def generate_reserved_keywords():
     return reserved_keywords
 
 def generate_syntax(tag_list):
-    tag_list = [tag for tag in tag_list if tag.language == "C++" or \
-                                           tag.language == "C"]
     reserved_keywords = generate_reserved_keywords()
 
     add_tags(tag_list, reserved_keywords, "cFunctionTag",   "Function", "f")

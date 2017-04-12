@@ -53,7 +53,7 @@ class StringOutput(Output):
     def _out_func(self, string):
         self.str += string
 
-def parse_tag(include, exclude, work):
+def parse_tag(include, exclude, languages, work):
     global count_pos
     global counts
 
@@ -62,6 +62,8 @@ def parse_tag(include, exclude, work):
     except CTag.NotTagException:
         return
     else:
+        if tag.language not in languages:
+            return
         if include and not any(g.match(tag.file_name) for g in include):
             return
         if exclude and any(g.match(tag.file_name) for g in include):
@@ -80,7 +82,7 @@ def parser_init(pos):
 
     counts = counts
 
-def run_tag_parsers(tag_file, include, exclude):
+def run_tag_parsers(tag_file, include, exclude, languages):
     global counts
 
     # Create pre-compiled regex matches for all of our include/exclude globs
@@ -99,7 +101,7 @@ def run_tag_parsers(tag_file, include, exclude):
     stderr.write("Processed %s" % progress_str)
     stderr.flush()
 
-    result = pool.map_async(partial(parse_tag, include, exclude),
+    result = pool.map_async(partial(parse_tag, include, exclude, languages),
                             tag_lines, chunksize=int(tag_count / cpu_count()))
     del tag_lines
     pool.close()
