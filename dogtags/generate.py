@@ -1,5 +1,7 @@
+import fnmatch
+import re
+
 from multiprocessing import Pool, Array, cpu_count, RLock, Value
-from fnmatch import fnmatch
 from os import path
 from sys import stderr, exit
 from time import sleep
@@ -59,8 +61,8 @@ def parse_tag(include, exclude, work):
     try:
         tag = CTag(work)
 
-        if (include and not any(fnmatch(tag.file_name, g) for g in include)) or \
-           (exclude and any(fnmatch(tag.file_name, g) for g in exclude)):
+        if (include and not any(g.match(tag.file_name) for g in include)) or \
+           (exclude and any(g.match(tag.file_name) for g in exclude)):
             tag = None
     except CTag.NotTagException:
         pass
@@ -79,6 +81,13 @@ def parser_init(pos):
 
 def run_tag_parsers(tag_file, include, exclude):
     global counts
+
+    # Create pre-compiled regex matches for all of our include/exclude globs
+    if include:
+        include = [re.compile(fnmatch.translate(glob)) for glob in include]
+    if exclude:
+        exclude = [re.compile(fnmatch.translate(glob)) for glob in exclude]
+
     pool = Pool(initializer=parser_init,
                 initargs=[Value(c_int, 0, lock=RLock())])
 
