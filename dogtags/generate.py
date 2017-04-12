@@ -57,17 +57,18 @@ def parse_tag(include, exclude, work):
     global count_pos
     global counts
 
-    tag = None
     try:
         tag = CTag(work)
-
-        if (include and not any(g.match(tag.file_name) for g in include)) or \
-           (exclude and any(g.match(tag.file_name) for g in exclude)):
-            tag = None
     except CTag.NotTagException:
-        pass
+        return
+    else:
+        if include and not any(g.match(tag.file_name) for g in include):
+            return
+        if exclude and any(g.match(tag.file_name) for g in include):
+            return
+    finally:
+        counts[count_pos] += 1
 
-    counts[count_pos] += 1
     return tag
 
 def parser_init(pos):
