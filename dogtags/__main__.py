@@ -25,7 +25,7 @@ generator = importlib.import_module("dogtags.generators." + args.filetype)
 
 stderr.write("Reading tag list...\n")
 tag_list = run_tag_parsers(args.tag_file, args.include, args.exclude,
-                           generator.languages)
+                           generator.languages, generator.extensions)
 
 stderr.write("Generating syntax highlighting...\n")
 syntax = generator.generate_syntax(tag_list)

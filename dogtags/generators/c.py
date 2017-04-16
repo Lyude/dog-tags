@@ -9,6 +9,7 @@ groups = dict()
 
 filetypes = ('c', 'cpp')
 languages = {'C', 'C++'}
+extensions = ('.c', '.h')
 
 def add_tags(tag_list, reserved_keywords, name, highlight_group, tag_type, preceding_keyword=None):
     if name in groups:
