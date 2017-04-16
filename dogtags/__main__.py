@@ -36,9 +36,9 @@ with ConditionalBlock(args.output,
                       " || ".join(['&ft == "%s"' % t for t in generator.filetypes])):
     # Clear the current syntax in vim in case the script's loaded multiple
     # times to update highlighting rules
-    for name in set([h.name for h in syntax]):
-        with ConditionalBlock(args.output, 'hlexists("%s")' % name):
-            args.output("syn clear %s" % name)
+    for hl in syntax:
+        with ConditionalBlock(args.output, 'hlexists("%s")' % hl.name):
+            args.output("syn clear %s" % hl.name)
 
     for highlight in syntax:
         highlight.generate_script(args.output)
