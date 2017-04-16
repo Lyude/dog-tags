@@ -6,6 +6,7 @@ from sys import stderr, exit
 from ctypes import c_int
 from functools import partial
 from dogtags.ctag import CTag
+from math import ceil
 
 PROGRESS_INTERVAL = (1 / 30)
 
@@ -107,7 +108,7 @@ def run_tag_parsers(tag_file, include, exclude, languages, extensions):
 
     result = pool.map_async(partial(parse_tag, include, exclude, languages,
                                     extensions),
-                            tag_lines, chunksize=int(tag_count / cpu_count()))
+                            tag_lines, chunksize=ceil(tag_count / cpu_count()))
     del tag_lines
     pool.close()
 
