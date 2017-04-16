@@ -2,9 +2,7 @@ import fnmatch
 import re
 
 from multiprocessing import Pool, Array, cpu_count, RLock, Value
-from os import path
 from sys import stderr, exit
-from time import sleep
 from ctypes import c_int
 from functools import partial
 from dogtags.ctag import CTag
