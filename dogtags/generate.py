@@ -6,6 +6,7 @@ from sys import stderr, exit
 from ctypes import c_int
 from functools import partial
 from dogtags.ctag import CTag
+from dogtags.generator import GeneratorBase
 from math import ceil
 
 PROGRESS_INTERVAL = (1 / 30)
@@ -56,18 +57,21 @@ class TagProcessorContext():
     Arguments:
         counts -- The array shared by each tag processing worker, each element
                   contains the number of tags processed by the respective
-                  worker.
+                  worker
         count_pos -- The position of this worker in counts
         include -- The list of files to include tags from
         exclude -- The list of files to not include tags from
+        generator -- GeneratorBase() compatible object with handlers to process
+                     tags in each worker
     """
-    def __init__(self, counts, count_pos, include, exclude):
+    def __init__(self, counts, count_pos, include, exclude, generator):
         self.counts = counts
         self.count_pos = count_pos
         self.include = include
         self.exclude = exclude
+        self.generator = generator
 
-def parse_tag(languages, extensions, work):
+def parse_tag(work):
     global context
 
     try:
@@ -75,35 +79,28 @@ def parse_tag(languages, extensions, work):
     except CTag.NotTagException:
         return
     else:
-        try:
-            if tag.language not in languages:
-                return
-        except AttributeError:
-            # Fall back to checking file extensions
-            if not any(tag.file_name.endswith(e) for e in extensions):
-                return
-
         if context.include and not \
            any(g.match(tag.file_name) for g in context.include):
             return
         if context.exclude and \
            any(g.match(tag.file_name) for g in context.exclude):
             return
+
+        return context.generator.process_tag(tag)
     finally:
         context.counts[context.count_pos] += 1
 
-    return tag
-
-def parser_init(counts, pos, include, exclude):
+def parser_init(counts, pos, include, exclude, generator):
     global context
 
     with pos.get_lock():
         count_pos = pos.value
         pos.value += 1
 
-    context = TagProcessorContext(counts, count_pos, include, exclude)
+    context = TagProcessorContext(counts, count_pos, include, exclude,
+                                  generator)
 
-def run_tag_parsers(tag_file, include, exclude, languages, extensions):
+def run_tag_parsers(tag_file, include, exclude, generator):
     counts = Array(c_int._type_, cpu_count(), lock=False)
 
     # Create pre-compiled regex matches for all of our include/exclude globs
@@ -114,7 +111,7 @@ def run_tag_parsers(tag_file, include, exclude, languages, extensions):
 
     pool = Pool(initializer=parser_init,
                 initargs=[counts, Value(c_int, 0, lock=RLock()),
-                          include, exclude])
+                          include, exclude, generator])
 
     tag_lines = tag_file.readlines()
     tag_count = len(tag_lines)
@@ -123,8 +120,8 @@ def run_tag_parsers(tag_file, include, exclude, languages, extensions):
     stderr.write("Processed %s" % progress_str)
     stderr.flush()
 
-    result = pool.map_async(partial(parse_tag, languages, extensions),
-                            tag_lines, chunksize=ceil(tag_count / cpu_count()))
+    result = pool.map_async(parse_tag, tag_lines,
+                            chunksize=ceil(tag_count / cpu_count()))
     del tag_lines
     pool.close()
 

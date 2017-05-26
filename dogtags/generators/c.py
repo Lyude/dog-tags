@@ -2,60 +2,65 @@
 from sys import argv
 from dogtags.ctag import CTag
 from dogtags.syntax import KeywordHighlight, SyntaxFile
+from ..generator import GeneratorBase
 from copy import copy
 
-keyword_highlights = list()
-groups = dict()
+builtin_syntax_file = SyntaxFile("c.vim")
 
-filetypes = ('c', 'cpp')
-languages = {'C', 'C++'}
-extensions = ('.c', '.h')
-
-def add_tags(tag_list, reserved_keywords, name, highlight_group, tag_type, preceding_keyword=None):
-    if name in groups:
-        keyword_highlight = groups[name]
-    else:
-        keyword_highlight = KeywordHighlight(name, highlight_group, preceding_keyword)
-        groups[name] = keyword_highlight
-
-    for tag in tag_list:
-        if tag.tag_type != tag_type or \
-           tag.tag_name in reserved_keywords or \
-           tag.tag_name.startswith("operator "):
-            continue
-
-        if tag.file_name.endswith(".h"):
-            keyword_highlight.add_tag(tag)
-        else:
-            keyword_highlight.add_tag(tag, tag.file_name)
-
-    keyword_highlights.append(keyword_highlight)
-
-def generate_reserved_keywords():
-    builtin_file = SyntaxFile("c.vim")
+class Generator(GeneratorBase):
+    extensions = ('.c', '.h')
+    languages = {'C', 'C++'}
+    filetypes = ('c', 'cpp')
 
     reserved_keywords = \
-            builtin_file.keywords["cStatement"] | \
-            builtin_file.keywords["cLabel"] | \
-            builtin_file.keywords["cConditional"] | \
-            builtin_file.keywords["cRepeat"] | \
-            builtin_file.keywords["cType"] | \
-            builtin_file.keywords["cOperator"] | \
-            builtin_file.keywords["cStructure"] | \
-            builtin_file.keywords["cStorageClass"] | \
-            builtin_file.keywords["cConstant"]
+        builtin_syntax_file.keywords["cStatement"]    | \
+        builtin_syntax_file.keywords["cLabel"]        | \
+        builtin_syntax_file.keywords["cConditional"]  | \
+        builtin_syntax_file.keywords["cRepeat"]       | \
+        builtin_syntax_file.keywords["cType"]         | \
+        builtin_syntax_file.keywords["cOperator"]     | \
+        builtin_syntax_file.keywords["cStructure"]    | \
+        builtin_syntax_file.keywords["cStorageClass"] | \
+        builtin_syntax_file.keywords["cConstant"]
 
-    return reserved_keywords
+    tag_type_mapping = {
+        "f": "cFunctionTag",
+        "p": "cFunctionTag",
+        "d": "cMacroTag",
+        "e": "cEnumMemberTag",
+        "t": "cTypeTag",
+        "s": "cTypeTag",
+        "g": "cTypeTag",
+    }
 
-def generate_syntax(tag_list):
-    reserved_keywords = generate_reserved_keywords()
+    def __init__(self):
+        super().__init__()
 
-    add_tags(tag_list, reserved_keywords, "cFunctionTag",   "Function", "f")
-    add_tags(tag_list, reserved_keywords, "cFunctionTag",   "Function", "p")
-    add_tags(tag_list, reserved_keywords, "cMacroTag",      "Macro",    "d")
-    add_tags(tag_list, reserved_keywords, "cEnumMemberTag", "Constant", "e")
-    add_tags(tag_list, reserved_keywords, "cTypeTag",       "Type",     "t")
-    add_tags(tag_list, reserved_keywords, "cStructTag",     "Type",     "s", "struct")
-    add_tags(tag_list, reserved_keywords, "cEnumTag",       "Type",     "g", "enum")
+        for o in [
+            KeywordHighlight("cFunctionTag", "Function"),
+            KeywordHighlight("cMacroTag", "Macro"),
+            KeywordHighlight("cEnumMemberTag", "Constant"),
+            KeywordHighlight("cTypeTag", "Type")
+        ]:
+            self.register_highlight_object(o)
 
-    return keyword_highlights
+    @classmethod
+    def process_tag(cls, tag):
+        if super().process_tag(tag) == None:
+            return
+        if tag.tag_type not in cls.tag_type_mapping:
+            return
+        if tag.tag_name in cls.reserved_keywords:
+            return
+        if tag.tag_name.startswith("operator "):
+            return
+
+        return (tag, tag.file_name.endswith(".h"))
+
+    def process_results(self, results):
+        o = self.highlight_objects
+        for tag, is_global in results:
+            self.highlight_objects[self.tag_type_mapping[tag.tag_type]].add_tag(
+                tag, scope=tag.file_name if is_global else None)
+
+del builtin_syntax_file

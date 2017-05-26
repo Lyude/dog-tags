@@ -2,6 +2,7 @@
 import importlib
 import argparse
 from dogtags.generate import run_tag_parsers, FileOutput
+from dogtags.generator import GeneratorBase
 from dogtags.syntax import ConditionalBlock
 from dogtags.version import __version__
 from sys import stderr, stdout, exit
@@ -21,26 +22,23 @@ parser.add_argument('-o', '--output',
                     default=FileOutput(stdout))
 args = parser.parse_args()
 
-generator = importlib.import_module("dogtags.generators." + args.filetype)
+generator_module = importlib.import_module("dogtags.generators." +
+                                           args.filetype)
+assert hasattr(generator_module, "Generator")
+assert issubclass(generator_module.Generator, GeneratorBase)
 
-stderr.write("Reading tag list...\n")
-tag_list = run_tag_parsers(args.tag_file, args.include, args.exclude,
-                           generator.languages, generator.extensions)
+stderr.write("Reading tags...\n")
+results = run_tag_parsers(args.tag_file, args.include, args.exclude,
+                          generator_module.Generator)
 
-stderr.write("Generating syntax highlighting...\n")
-syntax = generator.generate_syntax(tag_list)
+stderr.write("Processing tags...\n")
+generator = generator_module.Generator()
+generator.process_results(results)
 
-# Make sure that the tags file doesn't add tags for any other languages then
-# the one we're generating for
 with ConditionalBlock(args.output,
                       " || ".join(['&ft == "%s"' % t for t in generator.filetypes])):
-    # Clear the current syntax in vim in case the script's loaded multiple
-    # times to update highlighting rules
-    for hl in syntax:
-        with ConditionalBlock(args.output, 'hlexists("%s")' % hl.name):
-            args.output("syn clear %s" % hl.name)
-
-    for highlight in syntax:
-        highlight.generate_script(args.output)
+    generator.generate_init_code(args.output)
+    for obj in generator.highlight_objects.values():
+        obj.generate_script(args.output)
 
 exit(0)
