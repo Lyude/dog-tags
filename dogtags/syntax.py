@@ -2,7 +2,6 @@
 import re
 import os
 from glob import iglob
-from dogtags.generate import StringOutput
 
 class ConditionalBlock():
     """
