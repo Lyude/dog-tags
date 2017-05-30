@@ -33,7 +33,8 @@ results = run_tag_parsers(args.tag_file, args.include, args.exclude,
 
 stderr.write("Processing tags...\n")
 generator = generator_module.Generator()
-generator.process_results(results)
+for result in results:
+    generator.process_result(result)
 
 with ConditionalBlock(args.output,
                       " || ".join(['&ft == "%s"' % t for t in generator.filetypes])):

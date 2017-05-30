@@ -77,10 +77,9 @@ class GeneratorBase(ABC):
         raise NotImplemented()
 
     @abstractmethod
-    def process_results(self, tag):
+    def process_result(self, tag):
         """
-        Populates the registered highlight objects using the results from the
-        tag processor, which will be output into vimscript form after this
-        completes.
+        Populates the registered highlight objects using the given tag, which
+        will be output into vimscript form after this completes.
         """
         raise NotImplemented()

@@ -57,10 +57,10 @@ class Generator(GeneratorBase):
 
         return (tag, tag.file_name.endswith(".h"))
 
-    def process_results(self, results):
-        o = self.highlight_objects
-        for tag, is_global in results:
-            self.highlight_objects[self.tag_type_mapping[tag.tag_type]].add_tag(
-                tag, scope=tag.file_name if is_global else None)
+    def process_result(self, result):
+        tag, is_global = result
+
+        self.highlight_objects[self.tag_type_mapping[tag.tag_type]].add_tag(
+            tag, scope=tag.file_name if is_global else None)
 
 del builtin_syntax_file
