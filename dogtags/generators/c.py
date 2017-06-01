@@ -61,6 +61,6 @@ class Generator(GeneratorBase):
         tag, is_global = result
 
         self.highlight_objects[self.tag_type_mapping[tag.tag_type]].add_tag(
-            tag, scope=tag.file_name if is_global else None)
+            tag, scope=tag.file_name if not is_global else None)
 
 del builtin_syntax_file
