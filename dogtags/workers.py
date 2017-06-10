@@ -1,54 +1,14 @@
 import fnmatch
 import re
 
-from multiprocessing import Pool, Array, cpu_count, RLock, Value
 from sys import stderr, exit
+from math import ceil
 from ctypes import c_int
-from functools import partial
+from multiprocessing import Pool, Array, cpu_count, RLock, Value
 from dogtags.ctag import CTag
 from dogtags.generator import GeneratorBase
-from math import ceil
 
 PROGRESS_INTERVAL = (1 / 30)
-
-class Output():
-    def __init__(self):
-        self._in_new_line = False
-        self._at_start_of_line = True
-        self.indent_level = 0
-
-    def __call__(self, string, endline=True):
-        if self._in_new_line:
-            self._out_func('\n')
-
-        if self._at_start_of_line:
-            self._out_func("  " * self.indent_level)
-
-        self._out_func(string)
-
-        self._in_new_line = endline
-        self._at_start_of_line = endline
-
-class FileOutput(Output):
-    def __init__(self, file):
-        super().__init__()
-        self._file = file
-
-        try:
-            file.seek(0)
-        except Exception:
-            pass
-
-    def _out_func(self, string):
-        self._file.write(string)
-
-class StringOutput(Output):
-    def __init__(self):
-        super().__init__()
-        self.str = ""
-
-    def _out_func(self, string):
-        self.str += string
 
 class TagProcessorContext():
     """
@@ -84,10 +44,10 @@ def parse_tag(work):
     else:
         if context.is_primary:
             if context.include and not \
-                    any(g.match(tag.file_name) for g in context.include):
+               any(g.match(tag.file_name) for g in context.include):
                 return
             if context.exclude and \
-                    any(g.match(tag.file_name) for g in context.exclude):
+               any(g.match(tag.file_name) for g in context.exclude):
                 return
 
         return context.generator.process_tag(tag, context.is_primary)

@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 import importlib
 import argparse
-from dogtags.generate import run_tag_parsers, FileOutput
+from dogtags.output import FileOutput
+from dogtags.workers import run_tag_parsers
 from dogtags.generator import GeneratorBase
 from dogtags.syntax import ConditionalBlock
 from dogtags.version import __version__
