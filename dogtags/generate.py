@@ -59,14 +59,17 @@ class TagProcessorContext():
                   contains the number of tags processed by the respective
                   worker
         count_pos -- The position of this worker in counts
+        is_primary -- Whether or not this tag file is the primary tag file
         include -- The list of files to include tags from
         exclude -- The list of files to not include tags from
         generator -- GeneratorBase() compatible object with handlers to process
                      tags in each worker
     """
-    def __init__(self, counts, count_pos, include, exclude, generator):
+    def __init__(self, counts, count_pos, is_primary, include, exclude,
+                 generator):
         self.counts = counts
         self.count_pos = count_pos
+        self.is_primary = is_primary
         self.include = include
         self.exclude = exclude
         self.generator = generator
@@ -79,28 +82,29 @@ def parse_tag(work):
     except CTag.NotTagException:
         return
     else:
-        if context.include and not \
-           any(g.match(tag.file_name) for g in context.include):
-            return
-        if context.exclude and \
-           any(g.match(tag.file_name) for g in context.exclude):
-            return
+        if context.is_primary:
+            if context.include and not \
+                    any(g.match(tag.file_name) for g in context.include):
+                return
+            if context.exclude and \
+                    any(g.match(tag.file_name) for g in context.exclude):
+                return
 
-        return context.generator.process_tag(tag)
+        return context.generator.process_tag(tag, context.is_primary)
     finally:
         context.counts[context.count_pos] += 1
 
-def parser_init(counts, pos, include, exclude, generator):
+def parser_init(counts, pos, is_primary, include, exclude, generator):
     global context
 
     with pos.get_lock():
         count_pos = pos.value
         pos.value += 1
 
-    context = TagProcessorContext(counts, count_pos, include, exclude,
-                                  generator)
+    context = TagProcessorContext(counts, count_pos, is_primary,
+                                  include, exclude, generator)
 
-def run_tag_parsers(tag_file, include, exclude, generator):
+def run_tag_parsers(tag_file, is_primary, include, exclude, generator):
     counts = Array(c_int._type_, cpu_count(), lock=False)
 
     # Create pre-compiled regex matches for all of our include/exclude globs
@@ -111,13 +115,13 @@ def run_tag_parsers(tag_file, include, exclude, generator):
 
     pool = Pool(initializer=parser_init,
                 initargs=[counts, Value(c_int, 0, lock=RLock()),
-                          include, exclude, generator])
+                          is_primary, include, exclude, generator])
 
     tag_lines = tag_file.readlines()
     tag_count = len(tag_lines)
 
     progress_str = "0/%d tags (0%%)" % tag_count
-    stderr.write("Processed %s" % progress_str)
+    stderr.write("%s: Processed %s" % (tag_file.name, progress_str))
     stderr.flush()
 
     result = pool.map_async(parse_tag, tag_lines,

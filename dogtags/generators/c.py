@@ -45,8 +45,8 @@ class Generator(GeneratorBase):
             self.register_highlight_object(o)
 
     @classmethod
-    def process_tag(cls, tag):
-        if super().process_tag(tag) == None:
+    def process_tag(cls, tag, is_primary_tag_file):
+        if super().process_tag(tag, is_primary_tag_file) == None:
             return
         if tag.tag_type not in cls.tag_type_mapping:
             return
@@ -55,12 +55,20 @@ class Generator(GeneratorBase):
         if tag.tag_name.startswith("operator "):
             return
 
-        return (tag, tag.file_name.endswith(".h"))
+        from_header = tag.file_name.endswith(".h")
+        if not (is_primary_tag_file or from_header):
+            return
+
+        return (tag, from_header)
+
+    @classmethod
+    def is_global(cls, tag):
+        return tag.file_name.endswith(".h")
 
     def process_result(self, result):
-        tag, is_global = result
+        tag, from_header = result
 
         self.highlight_objects[self.tag_type_mapping[tag.tag_type]].add_tag(
-            tag, scope=tag.file_name if not is_global else None)
+            tag, scope=tag.file_name if not from_header else None)
 
 del builtin_syntax_file

@@ -20,6 +20,9 @@ parser.add_argument('-o', '--output',
                     help="Where to output the generated syntax file (default is /dev/stdout)",
                     type=lambda output: FileOutput(open(output, 'w')),
                     default=FileOutput(stdout))
+parser.add_argument('-a', '--add-library',
+                    help="Include globally visible tags from another project in the output",
+                    action='append', type=argparse.FileType(), dest='libraries')
 args = parser.parse_args()
 
 generator_module = importlib.import_module("dogtags.generators." +
@@ -28,8 +31,14 @@ assert hasattr(generator_module, "Generator")
 assert issubclass(generator_module.Generator, GeneratorBase)
 
 stderr.write("Reading tags...\n")
-results = run_tag_parsers(args.tag_file, args.include, args.exclude,
-                          generator_module.Generator)
+results = list()
+if args.libraries:
+    for tag_file in args.libraries:
+        results += run_tag_parsers(tag_file, False, args.include, args.exclude,
+                                   generator_module.Generator)
+
+results += run_tag_parsers(args.tag_file, True, args.include, args.exclude,
+                           generator_module.Generator)
 
 stderr.write("Processing tags...\n")
 generator = generator_module.Generator()

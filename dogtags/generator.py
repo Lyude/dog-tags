@@ -9,7 +9,7 @@ class UsageError(Exception):
 
 class GeneratorBase(ABC):
     @classmethod
-    def process_tag(cls, tag):
+    def process_tag(cls, tag, is_primary):
         """
         Processes a single parsed tag, and decides whether or not we want it to 
         be passed on to the final tag analysis method, process_tag_list. Called
@@ -22,6 +22,10 @@ class GeneratorBase(ABC):
         This function can be overriden to add extra tag analysis to be performed
         on each read tag. Results for additional analysis can be returned from
         here.
+
+        Arguments:
+             tag -- The tag to process
+             is_primary -- Whether or not this tag is from the primary tag file
 
         Returns: True to filter out the tag, False otherwise
         """
@@ -77,7 +81,7 @@ class GeneratorBase(ABC):
         raise NotImplemented()
 
     @abstractmethod
-    def process_result(self, tag):
+    def process_result(self, tag, is_primary_tag_file):
         """
         Populates the registered highlight objects using the given tag, which
         will be output into vimscript form after this completes.
