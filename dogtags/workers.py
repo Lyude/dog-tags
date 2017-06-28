@@ -117,3 +117,6 @@ def run_tag_parsers(tag_file, is_primary, include, exclude, generator):
         progress_display.update_progress(sum(counts))
 
     progress_display.finish()
+    for r in results.get():
+        if r != None:
+            yield r

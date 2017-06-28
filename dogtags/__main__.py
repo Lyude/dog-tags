@@ -35,16 +35,19 @@ stderr.write("Reading tags...\n")
 results = list()
 if args.libraries:
     for tag_file in args.libraries:
-        results += run_tag_parsers(tag_file, False, args.include, args.exclude,
-                                   generator_module.Generator)
+        results.append(iter(run_tag_parsers(tag_file, False,
+                                            args.include, args.exclude,
+                                            generator_module.Generator)))
 
-results += run_tag_parsers(args.tag_file, True, args.include, args.exclude,
-                           generator_module.Generator)
+results.append(iter(run_tag_parsers(args.tag_file, True,
+                                    args.include, args.exclude,
+                                    generator_module.Generator)))
 
 stderr.write("Processing tags...\n")
 generator = generator_module.Generator()
-for result in results:
-    generator.process_result(result)
+for i in results:
+    for result in i:
+        generator.process_result(result)
 
 with ConditionalBlock(args.output,
                       " || ".join(['&ft == "%s"' % t for t in generator.filetypes])):
