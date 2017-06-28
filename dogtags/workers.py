@@ -64,6 +64,30 @@ def parser_init(counts, pos, is_primary, include, exclude, generator):
     context = TagProcessorContext(counts, count_pos, is_primary,
                                   include, exclude, generator)
 
+class ProgressDisplay():
+    def __init__(self, filename, tag_count):
+        self.__progress_str = "0/%d tags (0%%)" % tag_count
+        self.__tag_count = tag_count
+
+        stderr.write("%s: %s" % (filename, self.__progress_str))
+        stderr.flush()
+
+    def update_progress(self, processed_count):
+        stderr.write("\b" * len(self.__progress_str))
+
+        self.__progress_str = "%d/%d tags (%d%%)" % (
+            processed_count,
+            self.__tag_count,
+            (processed_count / self.__tag_count) * 100)
+
+        stderr.write(self.__progress_str)
+        stderr.flush()
+
+    def finish(self):
+        self.update_progress(self.__tag_count)
+        stderr.write("\n")
+        stderr.flush()
+
 def run_tag_parsers(tag_file, is_primary, include, exclude, generator):
     counts = Array(c_int._type_, cpu_count(), lock=False)
 
@@ -76,40 +100,20 @@ def run_tag_parsers(tag_file, is_primary, include, exclude, generator):
     pool = Pool(initializer=parser_init,
                 initargs=[counts, Value(c_int, 0, lock=RLock()),
                           is_primary, include, exclude, generator])
-
     tag_lines = tag_file.readlines()
     tag_count = len(tag_lines)
 
-    progress_str = "0/%d tags (0%%)" % tag_count
-    stderr.write("%s: Processed %s" % (tag_file.name, progress_str))
-    stderr.flush()
-
-    result = pool.map_async(parse_tag, tag_lines,
-                            chunksize=ceil(tag_count / cpu_count()))
+    progress_display = ProgressDisplay(tag_file.name, tag_count)
+    results = pool.map_async(parse_tag, tag_lines,
+                             chunksize=ceil(tag_count / cpu_count()))
     del tag_lines
     pool.close()
 
     finished = False
     while not finished:
-        finished = result.ready()
-        processed = 0
-        for count in counts:
-            processed += count
+        results.wait(timeout=PROGRESS_INTERVAL)
+        finished = results.ready()
 
-        stderr.write("\b" * len(progress_str))
-        progress_str = "%d/%d tags (%d%%)" % (processed, tag_count,
-                                              (processed / tag_count) * 100)
-        stderr.write(progress_str)
-        if finished:
-            stderr.write("\n")
-        stderr.flush()
+        progress_display.update_progress(sum(counts))
 
-        if not finished:
-            result.wait(timeout=PROGRESS_INTERVAL)
-
-    if not result.successful:
-        stderr.write("Failed?\n")
-        exit(1)
-
-    return [r for r in result.get() if r != None]
-
+    progress_display.finish()
