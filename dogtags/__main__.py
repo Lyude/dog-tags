@@ -55,4 +55,6 @@ with ConditionalBlock(args.output,
     for obj in generator.highlight_objects.values():
         obj.generate_script(args.output)
 
+    generator.generate_fini_code(args.output)
+
 exit(0)

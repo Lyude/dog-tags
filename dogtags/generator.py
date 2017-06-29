@@ -74,6 +74,17 @@ class GeneratorBase(ABC):
             with ConditionalBlock(out, 'hlexists("%s")' % group.name):
                 out("syn clear %s" % group.name)
 
+    def generate_fini_code(self, out):
+        """
+        The final step in the syntax file generation process.
+
+        By default, this simply links all of the syntax groups we created to the
+        appropriate highlight groups
+        """
+        for group in self.highlight_objects.values():
+            with ConditionalBlock(out, 'hlexists("%s")' % group.name):
+                out("hi def link %s %s" % (group.name, group.highlight_group))
+
     @property
     @abstractmethod
     def filetypes(self):

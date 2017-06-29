@@ -101,12 +101,6 @@ class KeywordHighlight():
                 for tag in self.local_tags[scope]:
                     out("syn keyword %s %s" % (self.name, tag))
 
-                if len(self.global_tags) == 0:
-                    out("hi def link %s %s" % (self.name, self.highlight_group))
-
-        if len(self.global_tags) != 0:
-            out("hi def link %s %s" % (self.name, self.highlight_group))
-
 class SyntaxFile():
     """
     Extracts information from an already existing keyword file. Right now we
