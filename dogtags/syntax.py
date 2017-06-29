@@ -71,13 +71,12 @@ class TagScopeBlock(ConditionalBlock):
         super().start_block(condition)
 
 class KeywordHighlight():
-    def __init__(self, name, highlight_group, preceding_keyword=None):
+    def __init__(self, name, highlight_group):
         self.global_tags = set()
         self.local_tags = dict()
 
         self.name = name
         self.highlight_group = highlight_group
-        self.preceding_keyword = preceding_keyword
 
     def add_tag(self, tag, scope=None):
         if scope != None:
