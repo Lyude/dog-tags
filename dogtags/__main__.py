@@ -4,7 +4,7 @@ import argparse
 from dogtags.output import FileOutput
 from dogtags.workers import run_tag_parsers
 from dogtags.generator import GeneratorBase
-from dogtags.syntax import ConditionalBlock
+from dogtags.syntax import ConditionalBlock, generate_init_script
 from dogtags.version import __version__
 from sys import stderr, stdout, exit
 
@@ -49,6 +49,7 @@ for i in results:
     for result in i:
         generator.process_result(result)
 
+generate_init_script(args)
 with ConditionalBlock(args.output,
                       " || ".join(['&ft == "%s"' % t for t in generator.filetypes])):
     generator.generate_init_code(args.output)
