@@ -11,7 +11,7 @@ class GeneratorBase(ABC):
     @classmethod
     def process_tag(cls, tag, is_primary):
         """
-        Processes a single parsed tag, and decides whether or not we want it to 
+        Processes a single parsed tag, and decides whether or not we want it to
         be passed on to the final tag analysis method, process_tag_list. Called
         from a tag processing worker when reading in the tags file.
 
