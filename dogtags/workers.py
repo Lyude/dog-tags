@@ -6,7 +6,6 @@ from math import ceil
 from ctypes import c_int
 from multiprocessing import Pool, Array, cpu_count, RLock, Value
 from dogtags.ctag import CTag
-from dogtags.generator import GeneratorBase
 
 PROGRESS_INTERVAL = (1 / 30)
 
