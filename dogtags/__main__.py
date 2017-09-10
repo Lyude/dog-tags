@@ -49,13 +49,21 @@ for i in results:
     for result in i:
         generator.process_result(result)
 
-generate_init_script(args)
-with ConditionalBlock(args.output,
-                      " || ".join(['&ft == "%s"' % t for t in generator.filetypes])):
-    generator.generate_init_code(args.output)
-    for obj in generator.highlight_objects.values():
-        obj.generate_script(args.output)
+try:
+    generate_init_script(args)
+    with ConditionalBlock(args.output,
+                          " || ".join(['&ft == "%s"' % t for t in generator.filetypes])):
+        generator.generate_init_code(args.output)
+        for obj in generator.highlight_objects.values():
+            obj.generate_script(args.output)
 
-    generator.generate_fini_code(args.output)
+        generator.generate_fini_code(args.output)
+except BrokenPipeError as e:
+    # Broken pipe errors on stdout will happen whenever we're interrupted,
+    # silence them
+    if args.output._file is stdout:
+        stderr.close()
+
+    raise e from e
 
 exit(0)
