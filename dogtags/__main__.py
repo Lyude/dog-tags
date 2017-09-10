@@ -29,9 +29,9 @@ parser.add_argument('tag_file', help="The ctags file to use for generation",
                     type=argparse.FileType('r'))
 parser.add_argument('-V', '--version', action='version', version=__version__)
 parser.add_argument('-e', '--exclude', help="Exclude tags from files matching this pattern",
-                    metavar='pattern', action='append', dest='exclude')
+                    metavar='PATTERN', action='append')
 parser.add_argument('-i', '--include', help="Include only tags from files matching this pattern",
-                    metavar='pattern', action='append', dest='include')
+                    metavar='PATTERN', action='append')
 parser.add_argument('-o', '--output',
                     help="Where to output the generated syntax file (default is /dev/stdout)",
                     type=parse_output, default=FileOutput(stdout))
