@@ -26,7 +26,7 @@ parser.add_argument('filetype',
                     help="The filetype we're generating highlighting from",
                     type=parse_filetype)
 parser.add_argument('tag_file', help="The ctags file to use for generation",
-                    type=argparse.FileType('r'))
+                    type=argparse.FileType('r', errors='replace'))
 parser.add_argument('-V', '--version', action='version', version=__version__)
 parser.add_argument('-e', '--exclude', help="Exclude tags from files matching this pattern",
                     metavar='PATTERN', action='append')
