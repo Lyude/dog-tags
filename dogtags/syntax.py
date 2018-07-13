@@ -77,6 +77,8 @@ class TagScopeBlock(ConditionalBlock):
         super().start_block(condition)
 
 class KeywordHighlight():
+    CHUNK_SIZE = 10000
+
     def __init__(self, name, highlight_group):
         self.global_tags = set()
         self.local_tags = dict()
@@ -95,16 +97,22 @@ class KeywordHighlight():
 
         dest.add(tag.tag_name)
 
+    def _generate_syn_chunks(self, out, tags):
+        tags = list(tags)
+        while tags:
+            chunk = tags[:self.CHUNK_SIZE]
+            tags = tags[self.CHUNK_SIZE:]
+            out("syn keyword %s %s" %
+                (self.name, ' '.join(chunk)))
+
     def generate_script(self, out):
-        if len(self.global_tags) != 0:
-            for tag in self.global_tags:
-                out("syn keyword %s %s" % (self.name, tag))
+        if self.global_tags:
+            self._generate_syn_chunks(out, self.global_tags)
 
         with TagScopeBlock(out) as block:
             for scope in self.local_tags.keys():
                 block.start_block(scope)
-                for tag in self.local_tags[scope]:
-                    out("syn keyword %s %s" % (self.name, tag))
+                self._generate_syn_chunks(out, self.local_tags[scope])
 
 class SyntaxFile():
     """
