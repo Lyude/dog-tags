@@ -5,6 +5,20 @@ import datetime
 from glob import iglob
 from .version import __version__
 
+SYN_KEYWORD_ARGS = {
+    "conceal",
+    "cchar",
+    "contained",
+    "containedin",
+    "nextgroup",
+    "transparent",
+    "skipwhite",
+    "skipnl",
+    "skipempty",
+    "conceallevel",
+    "concealcursor"
+}
+
 class ConditionalBlock():
     """
     Generates simple conditional blocks to wrap around generated vimscript
@@ -87,6 +101,11 @@ class KeywordHighlight():
         self.highlight_group = highlight_group
 
     def add_tag(self, tag, scope=None):
+        # We can't allow any generators to try to add tags that match reserved
+        # keywords
+        if tag.tag_name.lower() in SYN_KEYWORD_ARGS:
+            return
+
         if scope != None:
             if scope not in self.local_tags:
                 self.local_tags[scope] = set()
@@ -121,10 +140,6 @@ class SyntaxFile():
     """
     keyword_rule_matcher = re.compile(r"^\s*syn(t(a(x)?)?)?\s+keyword\s+(?P<rule_name>\w+)\b(?P<rule_def>.*)")
     keyword_matcher = re.compile(r"\w+")
-    keyword_arguments = set(["conceal", "cchar", "contained", "containedin",
-                             "nextgroup", "transparent", "skipwhite",
-                             "skipnl", "skipempty", "conceallevel",
-                             "concealcursor"])
     SEARCH_DIRS = [
             "/usr/share/vim/vim*/syntax/",
     ]
@@ -145,7 +160,7 @@ class SyntaxFile():
 
     def is_keyword(word):
         if SyntaxFile.keyword_matcher.match(word) != None and \
-           word not in SyntaxFile.keyword_arguments:
+           word not in SYN_KEYWORD_ARGS:
             return True
         else:
             return False
