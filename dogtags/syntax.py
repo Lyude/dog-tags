@@ -10,6 +10,7 @@ SYN_KEYWORD_ARGS = {
     "cchar",
     "contained",
     "containedin",
+    "contains",
     "nextgroup",
     "transparent",
     "skipwhite",
